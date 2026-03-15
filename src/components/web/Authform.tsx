@@ -16,44 +16,74 @@ import {
 import { Input } from '#/components/ui/input'
 import { Link } from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
-import { loginFields, loginSchema } from '#/schemas/auth'
+import { z } from 'zod'
 
-export function LoginForm() {
+type FieldConfig<T extends Record<string, string>> = {
+  name: keyof T
+  label: string
+  placeholder: string
+  type: React.HTMLInputTypeAttribute
+}
+
+type AuthFormProps<T extends Record<string, string>> = {
+  title: string
+  description: string
+  buttonText: string
+  linkText: string
+  linkTo: string
+  linkLabel: string
+  schema: z.ZodType<T>
+  defaultValues: T
+  fields: readonly FieldConfig<T>[]
+}
+
+export function AuthForm<T extends Record<string, string>>({
+  title,
+  description,
+  buttonText,
+  linkText,
+  linkTo,
+  linkLabel,
+  schema,
+  defaultValues,
+  fields,
+}: AuthFormProps<T>) {
   const form = useForm({
-    defaultValues: {
-      email: '',
-      password: '',
-    },
+    defaultValues,
     validators: {
-      onSubmit: loginSchema,
+      onSubmit: schema,
     },
     onSubmit: async ({ value }) => {
       console.log(value)
     },
   })
+
   return (
     <Card className="max-w-md w-full">
       <CardHeader>
-        <CardTitle>Login to your account</CardTitle>
-        <CardDescription>
-          Enter your email below to login to your account
-        </CardDescription>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
       </CardHeader>
+
       <CardContent>
-        <form  onSubmit={(e) => {
+        <form
+          onSubmit={(e) => {
             e.preventDefault()
             form.handleSubmit()
-          }}>
+          }}
+        >
           <FieldGroup>
-            {loginFields.map((item) => (
-              <form.Field key={item.name} name={item.name}>
+            {fields.map((item) => (
+              <form.Field key={String(item.name)} name={item.name}>
                 {(field) => {
                   const isInvalid =
                     field.state.meta.isTouched && !field.state.meta.isValid
 
                   return (
                     <Field data-invalid={isInvalid}>
-                      <FieldLabel htmlFor={field.name}>{item.label}</FieldLabel>
+                      <FieldLabel htmlFor={field.name}>
+                        {item.label}
+                      </FieldLabel>
 
                       <Input
                         id={field.name}
@@ -61,10 +91,12 @@ export function LoginForm() {
                         type={item.type}
                         value={field.state.value}
                         onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        aria-invalid={isInvalid}
+                        onChange={(e) =>
+                          field.handleChange(e.target.value)
+                        }
                         placeholder={item.placeholder}
                         autoComplete="off"
+                        aria-invalid={isInvalid}
                       />
 
                       {isInvalid && (
@@ -75,10 +107,12 @@ export function LoginForm() {
                 }}
               </form.Field>
             ))}
+
             <Field>
-              <Button type="submit">Login</Button>
+              <Button type="submit">{buttonText}</Button>
+
               <FieldDescription className="text-center">
-                Don&apos;t have an account? <Link to="/signup">Sign up</Link>
+                {linkText} <Link to={linkTo}>{linkLabel}</Link>
               </FieldDescription>
             </Field>
           </FieldGroup>
