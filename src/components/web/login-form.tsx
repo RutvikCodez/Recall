@@ -14,11 +14,14 @@ import {
   FieldLabel,
 } from '#/components/ui/field'
 import { Input } from '#/components/ui/input'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
 import { loginFields, loginSchema } from '#/schemas/auth'
+import { authClient } from '#/lib/auth-client'
+import { toast } from 'sonner'
 
 export function LoginForm() {
+  const navigate = useNavigate()
   const form = useForm({
     defaultValues: {
       email: '',
@@ -28,7 +31,22 @@ export function LoginForm() {
       onSubmit: loginSchema,
     },
     onSubmit: async ({ value }) => {
-      console.log(value)
+      const { email, password } = value
+      await authClient.signIn.email({
+        email,
+        password,
+        fetchOptions: {
+          onSuccess: () => {
+            toast.success('Logged in successfully!')
+            navigate({
+              to: '/',
+            })
+          },
+          onError: ({ error }) => {
+            toast.error(error.message)
+          },
+        },
+      })
     },
   })
   return (
@@ -40,10 +58,12 @@ export function LoginForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form  onSubmit={(e) => {
+        <form
+          onSubmit={(e) => {
             e.preventDefault()
             form.handleSubmit()
-          }}>
+          }}
+        >
           <FieldGroup>
             {loginFields.map((item) => (
               <form.Field key={item.name} name={item.name}>
