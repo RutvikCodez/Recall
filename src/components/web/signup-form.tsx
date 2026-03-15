@@ -19,9 +19,11 @@ import { useForm } from '@tanstack/react-form'
 import { signUpFields, signUpSchema } from '#/schemas/auth'
 import { authClient } from '#/lib/auth-client'
 import { toast } from 'sonner'
+import { useTransition } from 'react'
 
 export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   const navigate = useNavigate()
+  const [isPending, startTransition] = useTransition()
   const form = useForm({
     defaultValues: {
       fullName: '',
@@ -31,30 +33,32 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
     validators: {
       onSubmit: signUpSchema,
     },
-    onSubmit: async ({ value }) => {
-      const {email,fullName,password} = value
-      await authClient.signUp.email({
-        name: fullName,
-        email,
-        password,
-        fetchOptions: {
-          onSuccess: () => {  
-            toast.success("Account created successfully!")
-            navigate({
-              to: "/"
-            })
+    onSubmit: ({ value }) => {
+      const { email, fullName, password } = value
+      startTransition(async () => {
+        await authClient.signUp.email({
+          name: fullName,
+          email,
+          password,
+          fetchOptions: {
+            onSuccess: () => {
+              toast.success('Account created successfully!')
+              navigate({
+                to: '/dashboard',
+              })
+            },
+            onError: ({ error }) => {
+              toast.error(error.message)
+            },
           },
-          onError: ({error}) => {
-            toast.error(error.message)
-          },
-        }
+        })
       })
     },
   })
   return (
     <Card {...props} className="max-w-md w-full">
       <CardHeader>
-        <CardTitle>Create an account</CardTitle>
+        <CardTitle>{isPending ? "Creating..." : "Create an account"}</CardTitle>
         <CardDescription>
           Enter your information below to create your account
         </CardDescription>
@@ -67,7 +71,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
           }}
         >
           <FieldGroup>
-           {signUpFields.map((item) => (
+            {signUpFields.map((item) => (
               <form.Field key={item.name} name={item.name}>
                 {(field) => {
                   const isInvalid =
@@ -75,9 +79,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
 
                   return (
                     <Field data-invalid={isInvalid}>
-                      <FieldLabel htmlFor={field.name}>
-                        {item.label}
-                      </FieldLabel>
+                      <FieldLabel htmlFor={field.name}>{item.label}</FieldLabel>
 
                       <Input
                         id={field.name}
@@ -85,9 +87,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                         type={item.type}
                         value={field.state.value}
                         onBlur={field.handleBlur}
-                        onChange={(e) =>
-                          field.handleChange(e.target.value)
-                        }
+                        onChange={(e) => field.handleChange(e.target.value)}
                         aria-invalid={isInvalid}
                         placeholder={item.placeholder}
                         autoComplete="off"
@@ -103,7 +103,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
             ))}
             <FieldGroup>
               <Field>
-                <Button type="submit">Create Account</Button>
+                <Button type="submit" disabled={isPending}>Create Account</Button>
                 <FieldDescription className="px-6 text-center">
                   Already have an account? <Link to="/login">Sign in</Link>
                 </FieldDescription>
