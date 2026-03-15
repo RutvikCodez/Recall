@@ -1,21 +1,62 @@
-import { Link } from "@tanstack/react-router"
-import { buttonVariants } from "../ui/button"
-import { ThemeToggle } from "./theme-toggle"
+import { Link } from '@tanstack/react-router'
+import { Button, buttonVariants } from '../ui/button'
+import { ThemeToggle } from './theme-toggle'
+import { authClient } from '#/lib/auth-client'
+import { toast } from 'sonner'
 
 const Navbar = () => {
-  return <nav className="sticky z-50 top-0 border-b bg-background/95 backdrop-blur supports-backdrop-filterbg-background/60:">
-    <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
+  const { data: session, isPending } = authClient.useSession()
+  const handleSignout = async () => {
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          toast.success('Signed out  successfully!')
+        },
+        onError: ({ error }) => {
+          toast.error(error.message)
+        },
+      },
+    })
+  }
+  return (
+    <nav className="sticky z-50 top-0 border-b bg-background/95 backdrop-blur supports-backdrop-filterbg-background/60:">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
         <div className="flex items-center gap-2">
-            <img src="https://tanstack.com/images/logos/logo-color-banner-600.png" alt="Ransatck Start Logo" className="size-8" />
-            <h1 className="text-lg font-semibold">Tanstack Start</h1>
+          <img
+            src="https://tanstack.com/images/logos/logo-color-banner-600.png"
+            alt="Ransatck Start Logo"
+            className="size-8"
+          />
+          <h1 className="text-lg font-semibold">Tanstack Start</h1>
         </div>
         <div className="flex items-center gap-3">
-            <ThemeToggle />
-            <Link to="/login" className={buttonVariants({variant: "secondary"})}>Login</Link>
-            <Link to="/signup" className={buttonVariants()}>Get Started</Link>
+          <ThemeToggle />
+          {isPending ? null : session ? (
+            <>
+              <Button variant={'secondary'} onClick={handleSignout}>
+                Logout
+              </Button>
+              <Link to="/dashboard" className={buttonVariants()}>
+                Dashboard
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className={buttonVariants({ variant: 'secondary' })}
+              >
+                Login
+              </Link>
+              <Link to="/signup" className={buttonVariants()}>
+                Get Started
+              </Link>
+            </>
+          )}
         </div>
-    </div>
-  </nav>
+      </div>
+    </nav>
+  )
 }
 
 export default Navbar
