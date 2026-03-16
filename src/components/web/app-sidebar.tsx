@@ -1,5 +1,4 @@
 'use client'
-import * as React from 'react'
 import { NavPrimary } from '#/components/web/nav-primary'
 import { NavUser } from '#/components/web/nav-user'
 import {
@@ -13,61 +12,13 @@ import {
   SidebarRail,
 } from '#/components/ui/sidebar'
 import {
-  GalleryVerticalEndIcon,
-  AudioLinesIcon,
-  TerminalIcon,
-  FrameIcon,
-  PieChartIcon,
-  MapIcon,
   BookmarkIcon,
   Import,
   Compass,
 } from 'lucide-react'
 import { Link, linkOptions } from '@tanstack/react-router'
 import type { NavPrimaryProps } from '#/lib/types'
-
-// This is sample data.
-const data = {
-  user: {
-    name: 'shadcn',
-    email: 'm@example.com',
-    avatar: '/avatars/shadcn.jpg',
-  },
-  teams: [
-    {
-      name: 'Acme Inc',
-      logo: <GalleryVerticalEndIcon />,
-      plan: 'Enterprise',
-    },
-    {
-      name: 'Acme Corp.',
-      logo: <AudioLinesIcon />,
-      plan: 'Startup',
-    },
-    {
-      name: 'Evil Corp.',
-      logo: <TerminalIcon />,
-      plan: 'Free',
-    },
-  ],
-  projects: [
-    {
-      name: 'Design Engineering',
-      url: '#',
-      icon: FrameIcon,
-    },
-    {
-      name: 'Sales & Marketing',
-      url: '#',
-      icon: PieChartIcon,
-    },
-    {
-      name: 'Travel',
-      url: '#',
-      icon: MapIcon,
-    },
-  ],
-}
+import type { User } from 'better-auth'
 
 const navItems: NavPrimaryProps['projects'] = linkOptions([
   {
@@ -90,9 +41,9 @@ const navItems: NavPrimaryProps['projects'] = linkOptions([
   },
 ])
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({ user }: { user: User }) {
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar collapsible="icon" >
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -114,7 +65,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavPrimary projects={navItems} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
