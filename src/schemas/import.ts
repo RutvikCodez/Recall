@@ -21,3 +21,8 @@ export const bulkImportFields = [
     placeholder: 'e.g. Blog, docs, tutorial',
   },
 ] as const
+
+export const extractSchema = z.object({
+  author: z.string().nullable(),
+  publishedAt: z.string().nullable(),
+})
